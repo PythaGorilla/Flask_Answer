@@ -15,7 +15,7 @@ PREFIX = '/'
 
 @app.route('/',methods=["GET","POST"])
 def client_start():
-    question_url=url_for(".client_main")
+    question_url=url_for(".update_questions")
 
     if request.method=="GET":
         return render_template("client_start.html")
@@ -31,25 +31,19 @@ def client_start():
             print "uid,cid=",uid,cid
             resp=cl.JsonParser(cl.star_planning(cl.url_start,uid,cid))
 
-            return render_template('client_main.html',
+            return render_template('update_questions.html',
                                qid=resp.questionID,
                                uid=uid,
                                url=question_url,
                                questions=resp.question,
                                choices=resp.choices_text,transitionText=resp.transitionText)
 
-@app.route('/main',methods=["GET","POST"])
+@app.route('/main',methods=["POST"])
 
-def client_main():
-    question_url=url_for(".client_main")
-    if request.method == "GET":
-        return render_template('client_main.html',
-                               qid='',
-                               uid='',
-                               url=question_url,
-                               questions="",
-                               choices=["yes","no"])
-    elif request.method == "POST":
+def update_questions():
+    question_url=url_for(".update_questions")
+
+    if request.method == "POST":
         print "redirect took"
         uid=request.form.get("uid",None)
         qid=request.form.get("qid",None)
@@ -58,22 +52,11 @@ def client_main():
         rdata=cl.post_answer('http://127.0.0.1/post_conv/',uid,qid,choice)
         print "answer ok"
         pdata=cl.JsonParser(rdata)
-        return render_template('client_main.html',uid=uid,qid=pdata.questionID,url=question_url,questions=pdata.question,transitionText=pdata.transitionText,
+        return render_template('update_questions.html',uid=uid,qid=pdata.questionID,url=question_url,questions=pdata.question,transitionText=pdata.transitionText,
                                choices=pdata.choices_text)
     pass
 
 
-# @app.route('/client/question/',methods=['POST'])
-# def client_question():
-#     if not request.args:
-#         pass
-#     else:
-#         uid=request.args.get("uid")
-#         qid=request.args.get("qid")
-#         choice=request.args.get("choice")
-#         rdata=cl.post_answer(url_for(".post"),uid,qid,choice)
-#         pdata=cl.JsonParser(rdata)
-#         return render_template('client_main.html',qid="",uid="",url=question_url)
 
 if __name__ == '__main__':
     app.run(
