@@ -1,10 +1,13 @@
 # Webservice to log Events to Warehouse and Adobe Campaign
 from os import abort
-from flask import Flask, render_template, request, jsonify
+
+from flask import Flask, render_template, request, url_for
+
 from factory import StateFactory
 from datarep import DataRepository
 from condata import ConversationData
-import sys
+#import client.client as cl
+
 # import happybase
 import datetime
 
@@ -21,7 +24,7 @@ stateobj = StateFactory()
 
 HOST = '0.0.0.0'
 PORT = 80
-PREFIX = '/dev/1.0/convmanager/'
+PREFIX = '/'
 
 
 # Start Planning API
@@ -33,10 +36,11 @@ def start_planning():
         try:
             json = request.json
             userid = json['uid']
-            dataobj.update_context(userid, '1')
+            cid=json['cid']
+            dataobj.update_context(userid, cid)
             dataobj.update_state_table(userid, '101', '101')
             print "ok1"
-            state = stateobj.start_conv_mgr(userid, '101', '1')
+            state = stateobj.start_conv_mgr(userid, '101', cid)
             print "ok2"
             out = state.getConversationData('101', int(userid))
             print "ok3"
@@ -121,6 +125,45 @@ def post():
             print "Cannot Post Conversation"
 
         # Run
+
+@app.route(PREFIX +'client/show/',methods=["GET","POST"])
+
+def client_main():
+    question_url=url_for(".client_main")
+    if request.method == "GET":
+        return render_template('client_main.html',
+                               qid='',
+                               uid='',
+                               url=question_url,
+                               questions="",
+                               choices=["yes","no"])
+    elif request.method == "POST":
+        uid=request.args.get("uid")
+        qid=request.args.get("qid")
+        choice=request.args.get("choice")
+        print "post ok"
+        rdata=cl.post_answer('http://127.0.0.1/post_conv/',uid,qid,choice)
+        print "answer ok"
+        pdata=cl.parse_json(rdata)
+        return render_template('client_main.html',uid=uid,qid=qid,url=question_url,questions=pdata.question)
+    pass
+
+
+# @app.route(PREFIX +'/client/question/',methods=['POST'])
+# def client_question():
+#     if not request.args:
+#         pass
+#     else:
+#         uid=request.args.get("uid")
+#         qid=request.args.get("qid")
+#         choice=request.args.get("choice")
+#         rdata=cl.post_answer(url_for(".post"),uid,qid,choice)
+#         pdata=cl.parse_json(rdata)
+#         return render_template('client_main.html',qid="",uid="",url=question_url)
+#
+
+
+
 
 
 if __name__ == '__main__':
