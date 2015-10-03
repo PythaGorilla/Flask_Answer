@@ -29,7 +29,7 @@ def client_start():
             uid=request.form.get("uid",None)
             cid=request.form.get("cid",None)
             print "uid,cid=",uid,cid
-            resp=cl.JsonParser(cl.star_planning(cl.url_start,uid,cid))
+            resp=cl.JsonParser(cl.start_planning(cl.url_start,uid,cid))
 
             return render_template('update_questions.html',
                                qid=resp.questionID,

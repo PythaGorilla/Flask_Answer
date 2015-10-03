@@ -11,7 +11,7 @@ url_answer="http://127.0.0.1/post_conv/"
 
 
 
-def star_planning(url_start,uid="1",cid="1"):
+def start_planning(url_start,uid="2",cid="1"):
     data = {"uid":uid,"cid":cid}
     data = json.dumps(data)
     req = urllib2.Request(url_start, data, {'Content-Type': 'application/json'})
